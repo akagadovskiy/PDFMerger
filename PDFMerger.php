@@ -101,9 +101,10 @@ class PDFMerger
 				{
 					$template = $fpdi->importPage($i);
 					$size = $fpdi->getTemplateSize($template);
-					$orientation = ($size['h'] > $size['w']) ? 'P' : 'L';
 
-					$fpdi->AddPage($orientation, array($size['w'], $size['h']));
+                    list($orientation, $pageSize) = $this->convertSize($size);
+
+                    $fpdi->AddPage($orientation, $pageSize);
 					$fpdi->useTemplate($template);
 				}
 			}
@@ -113,9 +114,10 @@ class PDFMerger
 				{
 					if(!$template = $fpdi->importPage($page)): throw new exception("Could not load page '$page' in PDF '$filename'. Check that the page exists."); endif;
 					$size = $fpdi->getTemplateSize($template);
-					$orientation = ($size['h'] > $size['w']) ? 'P' : 'L';
 
-					$fpdi->AddPage($orientation, array($size['w'], $size['h']));
+                    list($orientation, $pageSize) = $this->convertSize($size);
+
+                    $fpdi->AddPage($orientation, $pageSize);
 					$fpdi->useTemplate($template);
 				}
 			}
@@ -209,5 +211,27 @@ class PDFMerger
 
 		return $newpages;
 	}
+
+
+    /**
+     * Changes the order of width and height regarding to the orientation
+     *
+     * @param $size
+     * @return array
+     */
+    private function convertSize($size)
+    {
+        $orientation = 'L';
+        $pageSize = array($size['h'], $size['w']);
+
+        if ($size['h'] > $size['w']) {
+            $orientation = 'P';
+            $pageSize = array($size['w'], $size['h']);
+        }
+
+        return array($orientation, $pageSize);
+    }
+
+
 
 }
